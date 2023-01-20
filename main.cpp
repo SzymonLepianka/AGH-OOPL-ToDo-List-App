@@ -123,33 +123,25 @@ int main() {
 
         cout << endl << endl;
 
-        cout << "[a]dd a new todo" << endl;
-        cout << "[c]omplete a todo" << endl;
-        cout << "[q]uit" << endl;
+        cout << "Main Menu" << endl;
+        cout << "[1] Add a new Todo" << endl;
+        cout << "[2] Mark Todo as complete" << endl;
+        cout << "[3] Quit" << endl;
+        cout << "Enter your choice: ";
 
-        cout << "choice: ";
         getline(cin, input_option);
 
-        if (input_option == "q") {
-            cout << "Quitting..." << endl;
-
-            try {
-                ofstream file("todolist.txt");
-                if (file.good()) {
-
-                    for (auto &todoItem: todoItems) {
-                        todoItem.save(file);
-                    }
-                    file.close();
-                } else {
-                    cerr << "Error: Failed to open file for writing" << endl;
-                }
-            } catch (const std::ofstream::failure &e) {
-                cerr << "Error: Failed to save todo list to file. Reason: " << e.what() << endl;
+        if (input_option == "1") {
+            cout << "Enter todo item description: ";
+            cin.clear();
+            getline(cin, input_description);
+            if (input_description.empty()) {
+                error_message << "Error: TodoItem description cannot be empty" << endl;
+                continue;
             }
-
-            break;
-        } else if (input_option == "c") {
+            TodoItem newItem(input_description);
+            todoItems.push_back(newItem);
+        } else if (input_option == "2") {
             cout << "Enter Todo ID (to mark as completed): ";
             cin.clear();
             getline(cin, input_id);
@@ -178,16 +170,25 @@ int main() {
             if (!found) {
                 error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
             }
-        } else if (input_option == "a") {
-            cout << "Enter todo item description: ";
-            cin.clear();
-            getline(cin, input_description);
-            if (input_description.empty()) {
-                error_message << "Error: TodoItem description cannot be empty" << endl;
-                continue;
+        } else if (input_option == "3") {
+            cout << "Quitting..." << endl;
+
+            try {
+                ofstream file("todolist.txt");
+                if (file.good()) {
+
+                    for (auto &todoItem: todoItems) {
+                        todoItem.save(file);
+                    }
+                    file.close();
+                } else {
+                    cerr << "Error: Failed to open file for writing" << endl;
+                }
+            } catch (const std::ofstream::failure &e) {
+                cerr << "Error: Failed to save todo list to file. Reason: " << e.what() << endl;
             }
-            TodoItem newItem(input_description);
-            todoItems.push_back(newItem);
+
+            break;
         } else {
             error_message << "Error: Invalid option selected" << endl;
         }
