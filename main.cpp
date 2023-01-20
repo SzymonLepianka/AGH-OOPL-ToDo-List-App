@@ -2,6 +2,8 @@
 #include <string>
 #include <list>
 #include <ctime>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -19,6 +21,10 @@ public:
 
     int getTodoItemId() {
         return todoItemId;
+    }
+
+    void setTodoItemId(int _todoItemId) {
+        todoItemId = _todoItemId;
     }
 
     const string getDescription() {
@@ -39,6 +45,10 @@ public:
         description = newDescription;
         return true;
     }
+
+    void save(ofstream &file) {
+        file << todoItemId << "," << description << "," << completed << endl;
+    }
 };
 
 int main() {
@@ -51,12 +61,33 @@ int main() {
 
     srand(time(NULL));
 
-//    TodoItem test;
-//    test.create("this is a test");
-//    todoItems.push_back(test);
+    // Read todos from file
+    ifstream openfile("todolist.txt");
+    if (openfile.good()) {
+        string line;
+        while (getline(openfile, line)) {
+            stringstream ss(line);
+            TodoItem item;
+            string id;
+            string description;
+            string completed;
+
+            getline(ss, id, ',');
+            getline(ss, description, ',');
+            getline(ss, completed, ',');
+
+            item.create(description);
+            item.setCompleted(!(completed == "0"));
+            item.setTodoItemId(stoi(id));
+            todoItems.push_back(item);
+        }
+        openfile.close();
+    } else {
+        cerr << "Error: Failed to open file for reading" << endl;
+    }
 
     while (1) {
-        system("cls");
+//        system("cls");
         cout << "Todo List App" << endl;
         cout << endl << endl;
 
@@ -80,6 +111,22 @@ int main() {
 
         if (input_option == 'q') {
             cout << "Quitting..." << endl;
+
+            try {
+                ofstream file("todolist.txt");
+                if (file.good()) {
+
+                    for (auto &todoItem: todoItems) {
+                        todoItem.save(file);
+                    }
+                    file.close();
+                } else {
+                    cerr << "Error: Failed to open file for writing" << endl;
+                }
+            } catch (const std::ofstream::failure &e) {
+                cerr << "Error: Failed to save todo list to file. Reason: " << e.what() << endl;
+            }
+
             break;
         } else if (input_option == 'c') {
             cout << "Enter ID to mark completed: ";
@@ -101,5 +148,7 @@ int main() {
             todoItems.push_back(newItem);
         }
     }
+
+    system("pause");
     return 0;
 }
