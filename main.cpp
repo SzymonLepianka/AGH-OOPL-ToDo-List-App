@@ -46,6 +46,7 @@ int TodoItem::nextId = 1; // initialize the static variable to 1
 int main() {
     char input_option;
     string input_description;
+    ostringstream error_message;
     int input_id;
     list<TodoItem> todoItems;
     list<TodoItem>::iterator it;
@@ -65,14 +66,6 @@ int main() {
                 cerr << "Error: Invalid format in file. Could not read TodoItem ID." << endl;
                 continue;
             }
-            if (!getline(ss, description, ',')) {
-                cerr << "Error: Invalid format in file. Could not read TodoItem description." << endl;
-                continue;
-            }
-            if (!getline(ss, completed, ',')) {
-                cerr << "Error: Invalid format in file. Could not read TodoItem completion status." << endl;
-                continue;
-            }
 
             // Validate ID
             int itemId;
@@ -84,6 +77,15 @@ int main() {
             }
             if (itemId < 1) {
                 cerr << "Error: Invalid TodoItem ID in file. Must be greater than 0." << endl;
+                continue;
+            }
+
+            if (!getline(ss, description, ',')) {
+                cerr << "Error: Invalid format in file. Could not read TodoItem description." << endl;
+                continue;
+            }
+            if (!getline(ss, completed, ',')) {
+                cerr << "Error: Invalid format in file. Could not read TodoItem completion status." << endl;
                 continue;
             }
 
@@ -103,7 +105,12 @@ int main() {
     }
 
     while (1) {
-//        system("cls");
+        system("cls");
+
+        cout << error_message.str() << endl;
+        error_message.str("");
+        error_message.clear();
+
         cout << "Todo List App" << endl;
         cout << endl << endl;
 
@@ -145,22 +152,33 @@ int main() {
 
             break;
         } else if (input_option == 'c') {
-            cout << "Enter ID to mark completed: ";
+            cout << "Enter Todo ID (to mark as completed): ";
             cin >> input_id;
 
+            bool found = false;
             for (it = todoItems.begin(); it != todoItems.end(); it++) {
-                if (input_id == it->getTodoItemId()) {
+                if (it->getTodoItemId() == input_id) {
                     it->setCompleted(true);
+                    found = true;
                     break;
                 }
             }
+            if (!found) {
+                error_message << "Error: TodoItem with ID " << input_id << " not found" << endl;
+            }
         } else if (input_option == 'a') {
-            cout << "Add a new description: ";
+            cout << "Enter todo item description: ";
             cin.clear();
             cin.ignore();
             getline(cin, input_description);
+            if (input_description.empty()) {
+                error_message << "Error: TodoItem description cannot be empty" << endl;
+                continue;
+            }
             TodoItem newItem(input_description);
             todoItems.push_back(newItem);
+        } else {
+            error_message << "Error: Invalid option selected" << endl;
         }
     }
 
