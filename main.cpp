@@ -44,10 +44,8 @@ public:
 int TodoItem::nextId = 1; // initialize the static variable to 1
 
 int main() {
-    char input_option;
-    string input_description;
+    string input_option, input_id, input_description;
     ostringstream error_message;
-    int input_id;
     list<TodoItem> todoItems;
     list<TodoItem>::iterator it;
     todoItems.clear();
@@ -130,9 +128,9 @@ int main() {
         cout << "[q]uit" << endl;
 
         cout << "choice: ";
-        cin >> input_option;
+        getline(cin, input_option);
 
-        if (input_option == 'q') {
+        if (input_option == "q") {
             cout << "Quitting..." << endl;
 
             try {
@@ -151,25 +149,38 @@ int main() {
             }
 
             break;
-        } else if (input_option == 'c') {
+        } else if (input_option == "c") {
             cout << "Enter Todo ID (to mark as completed): ";
-            cin >> input_id;
+            cin.clear();
+            getline(cin, input_id);
+
+            // Validate input (ID)
+            if (input_id.empty()) {
+                error_message << "Error: TodoItem ID cannot be empty" << endl;
+                continue;
+            }
+            int itemId;
+            try {
+                itemId = stoi(input_id);
+            } catch (const std::invalid_argument &e) {
+                error_message << "Error: Invalid ID entered." << endl;
+                continue;
+            }
 
             bool found = false;
             for (it = todoItems.begin(); it != todoItems.end(); it++) {
-                if (it->getTodoItemId() == input_id) {
+                if (it->getTodoItemId() == itemId) {
                     it->setCompleted(true);
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                error_message << "Error: TodoItem with ID " << input_id << " not found" << endl;
+                error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
             }
-        } else if (input_option == 'a') {
+        } else if (input_option == "a") {
             cout << "Enter todo item description: ";
             cin.clear();
-            cin.ignore();
             getline(cin, input_description);
             if (input_description.empty()) {
                 error_message << "Error: TodoItem description cannot be empty" << endl;
