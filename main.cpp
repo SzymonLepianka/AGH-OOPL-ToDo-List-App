@@ -126,7 +126,8 @@ int main() {
         cout << "Main Menu" << endl;
         cout << "[1] Add a new Todo" << endl;
         cout << "[2] Mark Todo as complete" << endl;
-        cout << "[3] Quit" << endl;
+        cout << "[3] Delete Todo" << endl;
+        cout << "[4] Quit" << endl;
         cout << "Enter your choice: ";
 
         getline(cin, input_option);
@@ -171,6 +172,35 @@ int main() {
                 error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
             }
         } else if (input_option == "3") {
+            cout << "Enter Todo ID (to delete): ";
+            cin.clear();
+            getline(cin, input_id);
+
+            // Validate input (ID)
+            if (input_id.empty()) {
+                error_message << "Error: TodoItem ID cannot be empty" << endl;
+                continue;
+            }
+            int itemId;
+            try {
+                itemId = stoi(input_id);
+            } catch (const std::invalid_argument &e) {
+                error_message << "Error: Invalid ID entered." << endl;
+                continue;
+            }
+
+            bool found = false;
+            for (it = todoItems.begin(); it != todoItems.end(); it++) {
+                if (it->getTodoItemId() == itemId) {
+                    todoItems.erase(it);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
+            }
+        } else if (input_option == "4") {
             cout << "Quitting..." << endl;
 
             try {
