@@ -29,6 +29,10 @@ public:
         return completed;
     }
 
+    void setCompleted(bool _completed) {
+        completed = _completed;
+    }
+
     bool create(string newDescription) {
         //generates a random integer between 1 and 100
         todoItemId = rand() % 100 + 1;
@@ -38,15 +42,18 @@ public:
 };
 
 int main() {
+    char input_option;
+    string input_description;
+    int input_id;
     list<TodoItem> todoItems;
     list<TodoItem>::iterator it;
     todoItems.clear();
 
     srand(time(NULL));
 
-    TodoItem test;
-    test.create("this is a test");
-    todoItems.push_back(test);
+//    TodoItem test;
+//    test.create("this is a test");
+//    todoItems.push_back(test);
 
     while (1) {
         system("cls");
@@ -54,9 +61,45 @@ int main() {
         cout << endl << endl;
 
         for (it = todoItems.begin(); it != todoItems.end(); it++) {
-            cout << it->getTodoItemId() << " , " << it->getDescription() << " , " << it->isCompleted() << endl;
+            string completed = it->isCompleted() ? "done" : "not done";
+            cout << it->getTodoItemId() << " , " << it->getDescription() << " , " << completed << endl;
         }
-        break;
+
+        if (todoItems.empty()) {
+            cout << "List is empty! Add your first todo!" << endl;
+        }
+
+        cout << endl << endl;
+
+        cout << "[a]dd a new todo" << endl;
+        cout << "[c]omplete a todo" << endl;
+        cout << "[q]uit" << endl;
+
+        cout << "choice: ";
+        cin >> input_option;
+
+        if (input_option == 'q') {
+            cout << "Quitting..." << endl;
+            break;
+        } else if (input_option == 'c') {
+            cout << "Enter ID to mark completed: ";
+            cin >> input_id;
+
+            for (it = todoItems.begin(); it != todoItems.end(); it++) {
+                if (input_id == it->getTodoItemId()) {
+                    it->setCompleted(true);
+                    break;
+                }
+            }
+        } else if (input_option == 'a') {
+            cout << "Add a new description: ";
+            cin.clear();
+            cin.ignore();
+            getline(cin, input_description);
+            TodoItem newItem;
+            newItem.create(input_description);
+            todoItems.push_back(newItem);
+        }
     }
     return 0;
 }
