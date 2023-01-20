@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <list>
-#include <ctime>
 #include <fstream>
 #include <sstream>
 
@@ -12,9 +11,11 @@ private:
     int todoItemId;
     string description;
     bool completed;
-public:
-    TodoItem() : todoItemId(0), description(""), completed(false) {
+    static int nextId; // static variable to keep track of the next ID to be assigned
 
+public:
+    TodoItem(string _description) : description(_description), completed(false) {
+        todoItemId = nextId++;
     }
 
     ~TodoItem() = default;
@@ -23,15 +24,11 @@ public:
         return todoItemId;
     }
 
-    void setTodoItemId(int _todoItemId) {
-        todoItemId = _todoItemId;
-    }
-
-    const string getDescription() {
+    string getDescription() {
         return description;
     }
 
-    bool isCompleted() {
+    bool isCompleted() const {
         return completed;
     }
 
@@ -39,17 +36,12 @@ public:
         completed = _completed;
     }
 
-    bool create(string newDescription) {
-        //generates a random integer between 1 and 100
-        todoItemId = rand() % 100 + 1;
-        description = newDescription;
-        return true;
-    }
-
     void save(ofstream &file) {
         file << todoItemId << "," << description << "," << completed << endl;
     }
 };
+
+int TodoItem::nextId = 1; // initialize the static variable to 1
 
 int main() {
     char input_option;
@@ -59,15 +51,12 @@ int main() {
     list<TodoItem>::iterator it;
     todoItems.clear();
 
-    srand(time(NULL));
-
     // Read todos from file
     ifstream openfile("todolist.txt");
     if (openfile.good()) {
         string line;
         while (getline(openfile, line)) {
             stringstream ss(line);
-            TodoItem item;
             string id;
             string description;
             string completed;
@@ -89,7 +78,7 @@ int main() {
             int itemId;
             try {
                 itemId = stoi(id);
-            } catch (const std::invalid_argument& e) {
+            } catch (const std::invalid_argument &e) {
                 cerr << "Error: Invalid TodoItem ID in file. Must be an integer." << endl;
                 continue;
             }
@@ -104,9 +93,8 @@ int main() {
                 continue;
             }
 
-            item.create(description);
+            TodoItem item(description);
             item.setCompleted(completed == "1");
-            item.setTodoItemId(itemId);
             todoItems.push_back(item);
         }
         openfile.close();
@@ -171,8 +159,7 @@ int main() {
             cin.clear();
             cin.ignore();
             getline(cin, input_description);
-            TodoItem newItem;
-            newItem.create(input_description);
+            TodoItem newItem(input_description);
             todoItems.push_back(newItem);
         }
     }
