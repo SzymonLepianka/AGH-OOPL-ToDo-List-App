@@ -28,4 +28,12 @@
 *.out
 *.app
 
+# CMake generated files
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+Makefile
+
+# Build directories
 cmake-build-debug
+cmake-build-release
