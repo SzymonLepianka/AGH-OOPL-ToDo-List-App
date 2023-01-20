@@ -14,13 +14,13 @@ private:
     static int nextId; // static variable to keep track of the next ID to be assigned
 
 public:
-    TodoItem(string _description) : description(_description), completed(false) {
+    explicit TodoItem(string _description) : description(std::move(_description)), completed(false) {
         todoItemId = nextId++;
     }
 
     ~TodoItem() = default;
 
-    int getTodoItemId() {
+    [[nodiscard]] int getTodoItemId() const {
         return todoItemId;
     }
 
@@ -28,7 +28,7 @@ public:
         return description;
     }
 
-    bool isCompleted() const {
+    [[nodiscard]] bool isCompleted() const {
         return completed;
     }
 
@@ -102,7 +102,7 @@ int main() {
         cerr << "Error: Failed to open file for reading" << endl;
     }
 
-    while (1) {
+    while (true) {
         system("cls");
 
         cout << error_message.str() << endl;
@@ -112,9 +112,9 @@ int main() {
         cout << "Todo List App" << endl;
         cout << endl << endl;
 
-        for (it = todoItems.begin(); it != todoItems.end(); it++) {
-            string completed = it->isCompleted() ? "done" : "not done";
-            cout << it->getTodoItemId() << " , " << it->getDescription() << " , " << completed << endl;
+        for (auto &todoItem: todoItems) {
+            string completed = todoItem.isCompleted() ? "done" : "not done";
+            cout << todoItem.getTodoItemId() << " , " << todoItem.getDescription() << " , " << completed << endl;
         }
 
         if (todoItems.empty()) {
@@ -161,9 +161,9 @@ int main() {
             }
 
             bool found = false;
-            for (it = todoItems.begin(); it != todoItems.end(); it++) {
-                if (it->getTodoItemId() == itemId) {
-                    it->setCompleted(true);
+            for (auto &todoItem: todoItems) {
+                if (todoItem.getTodoItemId() == itemId) {
+                    todoItem.setCompleted(true);
                     found = true;
                     break;
                 }
