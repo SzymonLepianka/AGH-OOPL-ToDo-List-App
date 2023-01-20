@@ -72,13 +72,41 @@ int main() {
             string description;
             string completed;
 
-            getline(ss, id, ',');
-            getline(ss, description, ',');
-            getline(ss, completed, ',');
+            if (!getline(ss, id, ',')) {
+                cerr << "Error: Invalid format in file. Could not read TodoItem ID." << endl;
+                continue;
+            }
+            if (!getline(ss, description, ',')) {
+                cerr << "Error: Invalid format in file. Could not read TodoItem description." << endl;
+                continue;
+            }
+            if (!getline(ss, completed, ',')) {
+                cerr << "Error: Invalid format in file. Could not read TodoItem completion status." << endl;
+                continue;
+            }
+
+            // Validate ID
+            int itemId;
+            try {
+                itemId = stoi(id);
+            } catch (const std::invalid_argument& e) {
+                cerr << "Error: Invalid TodoItem ID in file. Must be an integer." << endl;
+                continue;
+            }
+            if (itemId < 1) {
+                cerr << "Error: Invalid TodoItem ID in file. Must be greater than 0." << endl;
+                continue;
+            }
+
+            // Validate completion status
+            if (completed != "0" && completed != "1") {
+                cerr << "Error: Invalid completion status in file. Must be 0 or 1." << endl;
+                continue;
+            }
 
             item.create(description);
-            item.setCompleted(!(completed == "0"));
-            item.setTodoItemId(stoi(id));
+            item.setCompleted(completed == "1");
+            item.setTodoItemId(itemId);
             todoItems.push_back(item);
         }
         openfile.close();
