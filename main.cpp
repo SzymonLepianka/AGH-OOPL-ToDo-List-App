@@ -1,33 +1,62 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <ctime>
 
 using namespace std;
 
-class ToDoItem {
+class TodoItem {
 private:
-    int toDoItemId;
+    int todoItemId;
     string description;
     bool completed;
 public:
-    ToDoItem(): toDoItemId(0), description(""), completed(false) {
+    TodoItem() : todoItemId(0), description(""), completed(false) {
 
     }
-    ~ToDoItem() = default;
+
+    ~TodoItem() = default;
+
+    int getTodoItemId() {
+        return todoItemId;
+    }
+
+    const string getDescription() {
+        return description;
+    }
+
+    bool isCompleted() {
+        return completed;
+    }
+
+    bool create(string newDescription) {
+        //generates a random integer between 1 and 100
+        todoItemId = rand() % 100 + 1;
+        description = newDescription;
+        return true;
+    }
 };
 
 int main() {
-    list<ToDoItem> toDoItems;
-    toDoItems.clear();
+    list<TodoItem> todoItems;
+    list<TodoItem>::iterator it;
+    todoItems.clear();
+
+    srand(time(NULL));
+
+    TodoItem test;
+    test.create("this is a test");
+    todoItems.push_back(test);
 
     while (1) {
         system("cls");
-        cout << "ToDo List App" << endl;
+        cout << "Todo List App" << endl;
         cout << endl << endl;
-        
 
-
+        for (it = todoItems.begin(); it != todoItems.end(); it++) {
+            cout << it->getTodoItemId() << " , " << it->getDescription() << " , " << it->isCompleted() << endl;
+        }
+        break;
     }
-
     return 0;
 }
