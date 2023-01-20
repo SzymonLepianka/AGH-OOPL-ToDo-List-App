@@ -43,15 +43,12 @@ public:
 
 int TodoItem::nextId = 1; // initialize the static variable to 1
 
-int main() {
-    string input_option, input_id, input_description;
-    ostringstream error_message;
+list<TodoItem> readTodoItemsFromFile(const string &fileName) {
     list<TodoItem> todoItems;
-    list<TodoItem>::iterator it;
     todoItems.clear();
 
     // Read todos from file
-    ifstream openfile("todolist.txt");
+    ifstream openfile(fileName);
     if (openfile.good()) {
         string line;
         while (getline(openfile, line)) {
@@ -101,6 +98,121 @@ int main() {
     } else {
         cerr << "Error: Failed to open file for reading" << endl;
     }
+    return todoItems;
+}
+
+void saveTodoItemsToFile(list<TodoItem> &todoItems, const string &fileName) {
+    try {
+        ofstream file(fileName);
+        if (file.good()) {
+            for (auto &item: todoItems) {
+                item.save(file);
+            }
+            file.close();
+        } else {
+            cerr << "Error: Failed to open file for writing" << endl;
+        }
+    } catch (const std::ofstream::failure &e) {
+        cerr << "Error: Failed to save todo list to file. Reason: " << e.what() << endl;
+    }
+}
+
+void printTodoItems(list<TodoItem> &todoItems) {
+    for (auto &todoItem: todoItems) {
+        string completed = todoItem.isCompleted() ? "done" : "not done";
+        cout << todoItem.getTodoItemId() << " , " << todoItem.getDescription() << " , " << completed << endl;
+    }
+    if (todoItems.empty()) {
+        cout << "List is empty! Add your first todo!" << endl;
+    }
+}
+
+void handleAddingNewTodo(list<TodoItem> &todoItems, ostringstream &error_message) {
+    string input_description;
+    cout << "Enter todo item description: ";
+    cin.clear();
+    getline(cin, input_description);
+
+    // validate input (description)
+    if (input_description.empty()) {
+        error_message << "Error: TodoItem description cannot be empty" << endl;
+        return;
+    }
+
+    TodoItem newItem(input_description);
+    todoItems.push_back(newItem);
+}
+
+void handleCompletingTodo(list<TodoItem> &todoItems, ostringstream &error_message) {
+    string input_id;
+    cout << "Enter Todo ID (to mark as completed): ";
+    cin.clear();
+    getline(cin, input_id);
+
+    // validate input (ID)
+    if (input_id.empty()) {
+        error_message << "Error: TodoItem ID cannot be empty" << endl;
+        return;
+    }
+    int itemId;
+    try {
+        itemId = stoi(input_id);
+    } catch (const std::invalid_argument &e) {
+        error_message << "Error: Invalid ID entered." << endl;
+        return;
+    }
+
+    bool found = false;
+    for (auto &todoItem: todoItems) {
+        if (todoItem.getTodoItemId() == itemId) {
+            todoItem.setCompleted(true);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
+    }
+}
+
+void handleDeletingTodo(list<TodoItem> &todoItems, ostringstream &error_message) {
+    string input_id;
+    list<TodoItem>::iterator it;
+    cout << "Enter Todo ID (to delete): ";
+    cin.clear();
+    getline(cin, input_id);
+
+    // Validate input (ID)
+    if (input_id.empty()) {
+        error_message << "Error: TodoItem ID cannot be empty" << endl;
+        return;
+    }
+    int itemId;
+    try {
+        itemId = stoi(input_id);
+    } catch (const std::invalid_argument &e) {
+        error_message << "Error: Invalid ID entered." << endl;
+        return;
+    }
+
+    bool found = false;
+    for (it = todoItems.begin(); it != todoItems.end(); it++) {
+        if (it->getTodoItemId() == itemId) {
+            todoItems.erase(it);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
+    }
+}
+
+int main() {
+    string input_option;
+    ostringstream error_message;
+    list<TodoItem> todoItems;
+    todoItems = readTodoItemsFromFile("todolist.txt");
 
     while (true) {
         system("cls");
@@ -112,14 +224,7 @@ int main() {
         cout << "Todo List App" << endl;
         cout << endl << endl;
 
-        for (auto &todoItem: todoItems) {
-            string completed = todoItem.isCompleted() ? "done" : "not done";
-            cout << todoItem.getTodoItemId() << " , " << todoItem.getDescription() << " , " << completed << endl;
-        }
-
-        if (todoItems.empty()) {
-            cout << "List is empty! Add your first todo!" << endl;
-        }
+        printTodoItems(todoItems);
 
         cout << endl << endl;
 
@@ -133,91 +238,14 @@ int main() {
         getline(cin, input_option);
 
         if (input_option == "1") {
-            cout << "Enter todo item description: ";
-            cin.clear();
-            getline(cin, input_description);
-            if (input_description.empty()) {
-                error_message << "Error: TodoItem description cannot be empty" << endl;
-                continue;
-            }
-            TodoItem newItem(input_description);
-            todoItems.push_back(newItem);
+            handleAddingNewTodo(todoItems, error_message);
         } else if (input_option == "2") {
-            cout << "Enter Todo ID (to mark as completed): ";
-            cin.clear();
-            getline(cin, input_id);
-
-            // Validate input (ID)
-            if (input_id.empty()) {
-                error_message << "Error: TodoItem ID cannot be empty" << endl;
-                continue;
-            }
-            int itemId;
-            try {
-                itemId = stoi(input_id);
-            } catch (const std::invalid_argument &e) {
-                error_message << "Error: Invalid ID entered." << endl;
-                continue;
-            }
-
-            bool found = false;
-            for (auto &todoItem: todoItems) {
-                if (todoItem.getTodoItemId() == itemId) {
-                    todoItem.setCompleted(true);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
-            }
+            handleCompletingTodo(todoItems, error_message);
         } else if (input_option == "3") {
-            cout << "Enter Todo ID (to delete): ";
-            cin.clear();
-            getline(cin, input_id);
-
-            // Validate input (ID)
-            if (input_id.empty()) {
-                error_message << "Error: TodoItem ID cannot be empty" << endl;
-                continue;
-            }
-            int itemId;
-            try {
-                itemId = stoi(input_id);
-            } catch (const std::invalid_argument &e) {
-                error_message << "Error: Invalid ID entered." << endl;
-                continue;
-            }
-
-            bool found = false;
-            for (it = todoItems.begin(); it != todoItems.end(); it++) {
-                if (it->getTodoItemId() == itemId) {
-                    todoItems.erase(it);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                error_message << "Error: TodoItem with ID " << itemId << " not found" << endl;
-            }
+            handleDeletingTodo(todoItems, error_message);
         } else if (input_option == "4") {
             cout << "Quitting..." << endl;
-
-            try {
-                ofstream file("todolist.txt");
-                if (file.good()) {
-
-                    for (auto &todoItem: todoItems) {
-                        todoItem.save(file);
-                    }
-                    file.close();
-                } else {
-                    cerr << "Error: Failed to open file for writing" << endl;
-                }
-            } catch (const std::ofstream::failure &e) {
-                cerr << "Error: Failed to save todo list to file. Reason: " << e.what() << endl;
-            }
-
+            saveTodoItemsToFile(todoItems, "todolist.txt");
             break;
         } else {
             error_message << "Error: Invalid option selected" << endl;
