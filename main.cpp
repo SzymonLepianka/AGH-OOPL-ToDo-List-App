@@ -139,6 +139,13 @@ void handleAddingNewTodo(list<TodoItem> &todoItems, ostringstream &error_message
         return;
     }
 
+    // check if description includes a comma
+    size_t found = input_description.find(',');
+    if (found != string::npos) {
+        error_message << "Error: Todo description cannot contain a comma." << endl;
+        return;
+    }
+
     TodoItem newItem(input_description);
     todoItems.push_back(newItem);
 }
